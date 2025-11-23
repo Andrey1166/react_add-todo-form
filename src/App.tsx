@@ -1,14 +1,25 @@
 import { useState } from 'react';
 import './App.scss';
 import { TodoList } from './components/TodoList';
-
 import usersFromServer from './api/users';
 import todosFromServer from './api/todos';
 import { User } from './types/User';
 import { Todo } from './types/Todo';
 
+const fallbackUser = {
+  id: 0,
+  name: 'Unknown',
+  username: 'unknown',
+  email: '',
+};
+
+const preparedTodosList: Todo[] = todosFromServer.map(todo => ({
+  ...todo,
+  user: usersFromServer.find(user => user.id === todo.userId) || fallbackUser,
+}));
+
 export const App: React.FC = () => {
-  const [todos, setTodos] = useState<Todo[]>(todosFromServer);
+  const [todos, setTodos] = useState<Todo[]>(preparedTodosList);
   const [title, setTitle] = useState('');
   const [hasTitleError, setHasTitleError] = useState(false);
   const [userName, setUserName] = useState(0);
@@ -47,14 +58,15 @@ export const App: React.FC = () => {
     }
 
     const maxId = todos.length ? Math.max(...todos.map(todo => todo.id)) : 0;
-    const currentUser: User = usersFromServer.find(u => u.id === userName);
+    const currentUser: User =
+      usersFromServer.find(user => user.id === userName) || fallbackUser;
 
     const newTodo: Todo = {
       id: maxId + 1 || 1,
       title: title,
       completed: false,
       userId: userName && isValid ? currentUser.id : 0,
-      user: currentUser,
+      user: currentUser || fallbackUser,
     };
 
     if (currentUser) {
@@ -109,7 +121,7 @@ export const App: React.FC = () => {
         </button>
       </form>
 
-      <TodoList todos={todos} users={usersFromServer} />
+      <TodoList todos={todos} />
     </div>
   );
 };

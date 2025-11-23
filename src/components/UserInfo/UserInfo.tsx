@@ -1,9 +1,7 @@
 import React from 'react';
-import { Todo } from '../../types/Todo';
 import { User } from '../../types/User';
 
 type Props = {
-  todo: Todo;
   user: User;
 };
 
